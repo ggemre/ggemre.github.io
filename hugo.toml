@@ -9,13 +9,21 @@ theme = 'PaperMod'
   pageRef = '/'
   weight = 1
   [[menus.main]]
-  name = 'Archive'
-  pageRef = '/archive'
+  name = 'Papers'
+  pageRef = '/papers'
   weight = 2
+  [[menus.main]]
+  name = 'Docs'
+  pageRef = '/docs'
+  weight = 3
+  [[menus.main]]
+  name = 'Posts'
+  pageRef = '/posts'
+  weight = 4
   [[menus.main]]
   name = 'Search'
   pageRef = '/search'
-  weight = 3
+  weight = 5
 
 [outputs]
   home = ['html', 'rss', 'json']
