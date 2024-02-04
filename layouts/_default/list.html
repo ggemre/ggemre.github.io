@@ -37,7 +37,7 @@
             </div>
         {{ end }}
 
-        <!-- Group content pages by subdirectory -->
+        <!-- taxonomic list for papers and docs sectiosn -->
         {{ if or (eq .Section "papers") (eq .Section "docs") }}
             {{ $folder := .Site.GetPage .Section }}
 
@@ -77,7 +77,8 @@
             {{ end }}
         {{ end }}
 
-        {{ if eq .Section "posts" }}
+        <!-- post format for projects -->
+        {{ if eq .Section "projects" }}
             {{- if .Content }}
             <div class="post-content">
               {{- if not (.Param "disableAnchoredHeadings") }}
@@ -164,8 +165,6 @@
             </footer>
             {{- end }}
         {{ end }}
-
-
 
     {{ end }}
 {{ end }}
