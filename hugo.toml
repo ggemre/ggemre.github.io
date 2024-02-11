@@ -41,3 +41,6 @@ imageHeight = 120
 [[params.socialIcons]]
 name = 'github'
 url = 'https://github.com/ggemre'
+[[params.socialIcons]]
+name = 'email'
+url = 'mailto:gagebmoore@gmail.com'

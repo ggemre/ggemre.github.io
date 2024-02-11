@@ -134,9 +134,12 @@ $ swapon /mnt/.swapfile
 $ sudo nixos-generate-config --root /mnt
 ```
 
-With the drive partitioned and the file systems set up, I downloaded my [NixOS configuration file](https://github.com/ggemre/nixos-config) which I had written within a VM and stored in GitHub, and ran one final command:
+With the drive partitioned and the file systems set up, I downloaded my [NixOS configuration file](https://github.com/ggemre/nixos-config) which I had written within a VM and stored in GitHub. I then set up the channels I was planning on using and installed the new operating system: 
 
 ```sh
+$ sudo nix-channel --add https://nixos.org/channels/nixos-unstable
+$ sudo nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager
+$ sudo nix-channel --update
 $ sudo nixos-install
 ```
 
