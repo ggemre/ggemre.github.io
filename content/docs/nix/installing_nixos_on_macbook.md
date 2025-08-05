@@ -77,70 +77,107 @@ PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
 64 bytes from 8.8.8.8: icmp_seq=2 ttl=114 time=26.6 ms
 ```
 
-From there, I quickly set up my new operating system using basic unix utilities included in the minimal installer:
-
-
-```sh
-$ sudo fdisk /dev/sda
-Welcome to fdisk (util-linux 2.37.2).
-Changes will remain in memory only, until you decide to write them.
-Be careful before using the write command.
-
-Command (m for help): g
-Created a new GPT disklabel (GUID: 4649EE36-3013-214E-961C-51A9187A7503).
-
-Command (m for help): n
-Partition number (1-128, default 1):
-First sector (2048-500118158, default 2048):
-Last sector, +/-sectors or +/-size{K,M,G,T,P} (2048-500118158, default 500118158): +500M
-Created a new partition 1 of type 'Linux filesystem' and of size 500 MiB.
-
-Command (m for help): t
-Selected partition 1
-Partition type (type L to list all types): 1
-Changed type of partition 'Linux filesystem' to 'EFI System'.
-
-Command (m for help): n
-Partition number (2-128, default 2): 
-First sector (209717248-625142414, default 209717248): 
-Last sector, +/-sectors or +/-size{K,M,G,T,P} (209717248-625142414, default 625142414):
-Created a new partition 2 of type 'Linux filesystem' and of size 198 GiB.
-
-Command (m for help): w
-The partition table has been altered.
-Syncing disks.
-
-$ lsblk
-NAME   MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS
-sda      8:0    0   200G  0 disk
-├─sda1   8:1    0   500M  0 part 
-└─sda2   8:2    0 198.5G  0 part 
-
-$ sudo mkfs.fat -F 32 /dev/sda1
-$ sudo fatlabel /dev/sda1 NIXBOOT
-$ sudo mkfs.ext4 /dev/sda2 -L NIXROOT
-$ sudo mount /dev/disk/by-label/NIXROOT /mnt
-$ sudo mkdir -p /mnt/boot
-$ sudo mount /dev/disk/by-label/NIXBOOT /mnt/boot
-$ sudo dd if=/dev/zero of=/mnt/.swapfile bs=1024 count=2097152
-2097152+0 records in
-2097152+0 records out
-2147483648 bytes (2.1 GB, 2.0 GiB) copied, 10.0312 s, 214 MB/s
-$ sudo chmod 600 /mnt/.swapfile
-$ mkswap /mnt/.swapfile
-Setting up swapspace version 1, size = 2 GiB (2147479552 bytes)
-no label, UUID=4649EE36-3013-214E-961C-51A9187A7503)
-$ swapon /mnt/.swapfile
-$ sudo nixos-generate-config --root /mnt
-```
-
-With the drive partitioned and the file systems set up, I downloaded my [NixOS configuration file](https://github.com/ggemre/nixos-config) which I had written within a VM and stored in GitHub. I then set up the channels I was planning on using and installed the new operating system: 
-
-```sh
-$ sudo nix-channel --add https://nixos.org/channels/nixos-unstable
-$ sudo nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager
-$ sudo nix-channel --update
-$ sudo nixos-install
-```
+From there, I cloned my NixOS configuration flake from GitHub, formatted the disk, and installed NixOS.
 
 The entire installation took about 45 minutes, and by the time it was done, my MacBook booted up into a fully functional and beautiful NixOS system. Everything functioned seamlessly and to this day I am satisfied with my system.
+
+---
+
+### Note 1 (August 2025):
+
+I recently underwent this process again, but booting into the installation media the same way as before did not offer me a network connection as expected. Instead, I had to tailor the installer nix file as follows:
+
+```nix
+{ config, lib, pkgs, ... }:
+
+{
+  imports = [
+    <nixpkgs/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix>
+  ];
+
+  networking.networkmanager.enable = true;
+  networking.wireless.enable = lib.mkForce false;
+  environment.systemPackages = with pkgs; [
+    b43Firmware_5_1_138
+    wirelesstools
+    networkmanagerapplet
+  ];
+
+  nixpkgs.config.allowUnfree = true; # necessary because the Broadcom chips require unfree firmware
+  boot.kernelModules = [ "wl" ];
+  boot.extraModulePackages = [ config.boot.kernelPackages.broadcom_sta ]; # this installs the actual drivers for WiFi
+  boot.blacklistedKernelModules = [ "b43" "bcma" ];
+}
+```
+
+### Note 2 (August 2025):
+
+For archiving purposes, this is what the last step used to say (when I used channels instead of managing everything in flakes):
+
+
+> From there, I quickly set up my new operating system using basic unix utilities included in the minimal installer:
+> 
+> 
+> ```sh
+> $ sudo fdisk /dev/sda
+> Welcome to fdisk (util-linux 2.37.2).
+> Changes will remain in memory only, until you decide to write them.
+> Be careful before using the write command.
+> 
+> Command (m for help): g
+> Created a new GPT disklabel (GUID: 4649EE36-3013-214E-961C-51A9187A7503).
+> 
+> Command (m for help): n
+> Partition number (1-128, default 1):
+> First sector (2048-500118158, default 2048):
+> Last sector, +/-sectors or +/-size{K,M,G,T,P} (2048-500118158, default 500118158): +500M
+> Created a new partition 1 of type 'Linux filesystem' and of size 500 MiB.
+> 
+> Command (m for help): t
+> Selected partition 1
+> Partition type (type L to list all types): 1
+> Changed type of partition 'Linux filesystem' to 'EFI System'.
+> 
+> Command (m for help): n
+> Partition number (2-128, default 2): 
+> First sector (209717248-625142414, default 209717248): 
+> Last sector, +/-sectors or +/-size{K,M,G,T,P} (209717248-625142414, default 625142414):
+> Created a new partition 2 of type 'Linux filesystem' and of size 198 GiB.
+> 
+> Command (m for help): w
+> The partition table has been altered.
+> Syncing disks.
+> 
+> $ lsblk
+> NAME   MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS
+> sda      8:0    0   200G  0 disk
+> ├─sda1   8:1    0   500M  0 part 
+> └─sda2   8:2    0 198.5G  0 part 
+> 
+> $ sudo mkfs.fat -F 32 /dev/sda1
+> $ sudo fatlabel /dev/sda1 NIXBOOT
+> $ sudo mkfs.ext4 /dev/sda2 -L NIXROOT
+> $ sudo mount /dev/disk/by-label/NIXROOT /mnt
+> $ sudo mkdir -p /mnt/boot
+> $ sudo mount /dev/disk/by-label/NIXBOOT /mnt/boot
+> $ sudo dd if=/dev/zero of=/mnt/.swapfile bs=1024 count=2097152
+> 2097152+0 records in
+> 2097152+0 records out
+> 2147483648 bytes (2.1 GB, 2.0 GiB) copied, 10.0312 s, 214 MB/s
+> $ sudo chmod 600 /mnt/.swapfile
+> $ mkswap /mnt/.swapfile
+> Setting up swapspace version 1, size = 2 GiB (2147479552 bytes)
+> no label, UUID=4649EE36-3013-214E-961C-51A9187A7503)
+> $ swapon /mnt/.swapfile
+> $ sudo nixos-generate-config --root /mnt
+> ```
+> 
+> With the drive partitioned and the file systems set up, I downloaded my [NixOS configuration file](https://github.com/ggemre/nixos-config) which I had written within a VM and stored in GitHub. I then set up the channels I was planning on using and installed the new operating system: 
+> 
+> ```sh
+> $ sudo nix-channel --add https://nixos.org/channels/nixos-unstable
+> $ sudo nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager
+> $ sudo nix-channel --update
+> $ sudo nixos-install
+> ```
+
