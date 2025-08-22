@@ -7,8 +7,7 @@ new path:
 
 
   
-[doc('Start the nut server')]
+[doc('Start development server')]
 [group('server')]
 start:
-  docker compose up -d
-
+  hugo serve
