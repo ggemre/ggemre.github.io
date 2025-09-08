@@ -33,7 +33,7 @@ find "$SRC" -type f | while read -r file; do
       # Convert Markdown to HTML
       out="$DEST/$base.html"
       mkdir -p "$(dirname "$out")"
-      pandoc "$file" -o "$out"
+      pandoc "$file" -o "$out" --standalone
       echo "Converted Markdown → HTML: $rel → $base.html"
       ;;
     *)
