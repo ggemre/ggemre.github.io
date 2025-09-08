@@ -39,7 +39,7 @@ jobs:
       - name: Build site with Nix
         run: |
           echo ">> Begin static site generation <<"
-          nix run .#build
+          nix build
 
       - name: Setup Pages
         id: pages
@@ -48,7 +48,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./public
+          path: ./result
 
   deploy:
     environment:

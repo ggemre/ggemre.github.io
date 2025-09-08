@@ -28,28 +28,40 @@
     in
     {
       packages = eachSystem (pkgs: {
-        ssg = pkgs.writeShellApplication {
-          name = "ssg";
+        default = pkgs.stdenv.mkDerivation {
+          pname = "www";
+          version = "1.0";
+          src = ./.;
 
-          runtimeInputs = [
+          nativeBuildInputs = [
             pkgs.bash
             pkgs.pandoc
             pkgs.typst
           ];
 
-          text = builtins.readFile ./scripts/build.sh;
+          buildPhase = ''
+            bash ./scripts/build.sh
+          '';
+
+          installPhase = ''
+            mkdir -p $out
+            cp -r public/* $out/
+          '';
         };
       });
 
       apps = eachSystem (pkgs: {
-        build = {
-          type = "app";
-          program = "${self.packages.${pkgs.system}.ssg}/bin/ssg";
-        };
-        serve = {
-          type = "app";
-          program = "${pkgs.python3}/bin/python3 -m http.server 8000 --directory public";
-        };
+        serve =
+          let
+            site = self.packages.${pkgs.system}.default;
+            serveScript = pkgs.writeShellScriptBin "serve-site" ''
+              exec ${pkgs.python3}/bin/python3 -m http.server 8000 --directory ${site}
+            '';
+          in
+          {
+            type = "app";
+            program = "${serveScript}/bin/serve-site";
+          };
       });
 
       devShells = eachSystem (pkgs: {
