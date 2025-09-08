@@ -39,6 +39,12 @@
             pkgs.typst
           ];
 
+          FONTCONFIG_FILE = pkgs.makeFontsConf {
+            fontDirectories = [
+              pkgs.source-sans-pro
+            ];
+          };
+
           buildPhase = ''
             bash ./scripts/build.sh
           '';
