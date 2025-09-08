@@ -21,8 +21,9 @@ find "$SRC" -type f | while read -r file; do
       cp "$file" "$DEST/$rel"
       echo "Copied HTML: $rel"
       ;;
-    typst)
+    typ)
       # Compile Typst to PDF
+      # TODO: manage template.typ files !!
       out="$DEST/$base.pdf"
       mkdir -p "$(dirname "$out")"
       typst compile "$file" "$out"
