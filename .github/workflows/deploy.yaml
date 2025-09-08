@@ -38,8 +38,8 @@ jobs:
 
       - name: Build site with Nix
         run: |
+          echo ">> Begin static site generation <<"
           nix run .#build
-          ls -R ./public
 
       - name: Setup Pages
         id: pages
