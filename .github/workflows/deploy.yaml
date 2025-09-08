@@ -1,7 +1,6 @@
 name: Deploy site to Pages
 
 on:
-  # Runs on pushes targeting the default branch
   push:
     branches:
       - "main"
@@ -21,29 +20,36 @@ concurrency:
   group: "pages"
   cancel-in-progress: false
 
-# Default to bash
 defaults:
   run:
     shell: bash
 
 jobs:
-  # Build job
   build:
     runs-on: ubuntu-latest
-    # env:
-    #   FOO: 0.1
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Build site with Nix
+        run: |
+          nix run .#build
+          ls -R ./public
+
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./public
 
-  # Deployment job
   deploy:
     environment:
       name: github-pages
