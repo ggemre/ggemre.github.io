@@ -1,0 +1,31 @@
+html {
+  background-color: #191724;
+  color: #e0def4;
+  font-family: Arial, Helvetica, sans-serif;
+}
+blockquote {
+  background-color: #1f1d2e;
+  border-color: #31748f;
+  border-width: 3px;
+  padding: 4px 16px;
+  color: #908caa;
+}
+.red {
+  color: #eb6f92;
+}
+.orange {
+  color: #ebbcba;
+}
+.yellow {
+  color: #f6c177;
+}
+.green {
+  color: #9ccfd8;
+}
+.blue {
+  color: #31748f;
+}
+.purple {
+  color: #c4a7e7;
+}
+
